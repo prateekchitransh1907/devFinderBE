@@ -9,7 +9,9 @@ const PORT = 3000;
 //   res.send("Welcome to the contact page");
 // });
 
-app.get("/user", (req, res) => {
+app.get("/user/:userId/:name", (req, res) => {
+  console.log(req.query);
+  console.log(req.params);
   res.send({ firstName: "Prateek", lastName: "Chitransh" });
 });
 
