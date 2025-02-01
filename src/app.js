@@ -1,59 +1,32 @@
 const express = require("express");
-const { adminAuth, userAuth } = require("./middlewares/auth");
-
+const { connectDB } = require("./config/database");
+const { UserModel } = require("./models/user");
 const app = express();
 const PORT = 3000;
 
-//request handlers
-/*app.use matches all the HTTP methods GET POST PUT PATCH DELETE*/
-// app.use("/home/contact", (req, res) => {
-//   res.send("Welcome to the contact page");
-// });
-//a middleware for all the HTTP calls which have /admin in the url
-app.use("/admin", adminAuth);
-
-app.get("/user/:userId/:name", userAuth, (req, res) => {
-  res.send({ firstName: "Prateek", lastName: "Chitransh" });
-});
-app.get("/admin/getAllData", (req, res) => {
-  res.send({ firstName: "Prateek", lastName: "Chitransh", role: "admin" });
-});
-app.get("/admin/deleteAllData", (req, res) => {
-  res.send("deleted");
-});
-app.post(
-  "/user",
-  (req, res, next) => {
-    console.log("save user to DB");
-    //res.send("User saved to DB!!!");
-    next();
-  },
-  (req, res) => {
-    res.send({
-      status: "success",
-      message: "user in DB saved",
+app.post("/signup", async (req, res) => {
+  //creating a new instance of user model
+  const user = new UserModel({
+    firstName: "KL",
+    lastName: "Rahul",
+    emailId: "rahul.kl@gmail.com",
+    password: "rahul",
+  });
+  try {
+    await user.save();
+    res.send("user added successfully");
+  } catch (err) {
+    console.log("Error==>", err);
+    res.status(400).send({
+      message: "Error in creating user: " + err.message,
     });
   }
-);
-
-app.delete("/user", (req, res) => {
-  res.send("Deleted record from DB!!!");
 });
-
-app.put("/user", (req, res) => {
-  res.send("updated record in DB!!!");
-});
-
-app.patch("/user", (req, res) => {
-  res.send("patched record in DB!!!");
-});
-//error handling using middleware - otherwise use try catch
-app.use("/", (err, req, res, next) => {
-  if (err) {
-    res.status(500).send("Internal Server Error");
-  }
-});
-
-app.listen(PORT, () => {
-  console.log("Listening on PORT", PORT);
-});
+connectDB()
+  .then(() => {
+    console.log("<====== Database connection established ====>");
+    app.listen(PORT, () => {
+      console.log("Listening on PORT", PORT);
+    });
+  })
+  .catch((err) => console.error("Database connection failed "));
