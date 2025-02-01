@@ -1,4 +1,5 @@
 const express = require("express");
+const { adminAuth, userAuth } = require("./middlewares/auth");
 
 const app = express();
 const PORT = 3000;
@@ -8,17 +9,32 @@ const PORT = 3000;
 // app.use("/home/contact", (req, res) => {
 //   res.send("Welcome to the contact page");
 // });
+//a middleware for all the HTTP calls which have /admin in the url
+app.use("/admin", adminAuth);
 
-app.get("/user/:userId/:name", (req, res) => {
-  console.log(req.query);
-  console.log(req.params);
+app.get("/user/:userId/:name", userAuth, (req, res) => {
   res.send({ firstName: "Prateek", lastName: "Chitransh" });
 });
-
-app.post("/user", (req, res) => {
-  console.log("save user to DB");
-  res.send("User saved to DB!!!");
+app.get("/admin/getAllData", (req, res) => {
+  res.send({ firstName: "Prateek", lastName: "Chitransh", role: "admin" });
 });
+app.get("/admin/deleteAllData", (req, res) => {
+  res.send("deleted");
+});
+app.post(
+  "/user",
+  (req, res, next) => {
+    console.log("save user to DB");
+    //res.send("User saved to DB!!!");
+    next();
+  },
+  (req, res) => {
+    res.send({
+      status: "success",
+      message: "user in DB saved",
+    });
+  }
+);
 
 app.delete("/user", (req, res) => {
   res.send("Deleted record from DB!!!");
@@ -30,10 +46,6 @@ app.put("/user", (req, res) => {
 
 app.patch("/user", (req, res) => {
   res.send("patched record in DB!!!");
-});
-
-app.use("/home", (req, res) => {
-  res.send("Welcome to the home page");
 });
 
 // app.use("", (req, res) => {
