@@ -47,10 +47,12 @@ app.put("/user", (req, res) => {
 app.patch("/user", (req, res) => {
   res.send("patched record in DB!!!");
 });
-
-// app.use("", (req, res) => {
-//   res.send("Welcome to the dashboard page");
-// });
+//error handling using middleware - otherwise use try catch
+app.use("/", (err, req, res, next) => {
+  if (err) {
+    res.status(500).send("Internal Server Error");
+  }
+});
 
 app.listen(PORT, () => {
   console.log("Listening on PORT", PORT);
