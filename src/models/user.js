@@ -3,6 +3,9 @@ var validator = require("validator");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 
+const DEFAULT_PHOTO_URL =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKn2kSPMwd1KMEfG2hJ8koAy2d9TH9JQmW8A&s";
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -36,16 +39,14 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      validate(value) {
-        if (!["male", "female", "Not Specified"].includes(value)) {
-          throw new Error("Gender is not valid");
-        }
-      },
+      enum: {
+        values: ["male", "female", "Not Specified"],
+        message: "{VALUE} is not a valid gender",
+      }, // validate(value) { //   if (!["male", "female", "Not Specified"].includes(value)) { //     throw new Error("Gender is not valid"); //   } // },
     },
     photoUrl: {
       type: String,
-      default:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRIvjlPnrVQyU-f3cotczTkU5eitJUijH4Fng&s",
+      default: DEFAULT_PHOTO_URL,
       validate(value) {
         if (!validator.isURL(value)) {
           throw new Error("Invalid photoURL: " + value);
@@ -62,6 +63,22 @@ const userSchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    toJSON: {
+      transform(doc, ret) {
+        if (!ret.photoUrl) {
+          ret.photoUrl = DEFAULT_PHOTO_URL;
+        }
+        return ret;
+      },
+    },
+    toObject: {
+      transform(doc, ret) {
+        if (!ret.photoUrl) {
+          ret.photoUrl = DEFAULT_PHOTO_URL;
+        }
+        return ret;
+      },
+    },
   }
 );
 

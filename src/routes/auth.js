@@ -46,31 +46,47 @@ authRouter.post("/login", async (req, res) => {
     if (!loginUser) {
       throw new Error("Invalid Credentials!");
     } else {
-      const dbPassword = loginUser.password;
       const isPasswordValid = await loginUser.validatePassword(password);
       if (isPasswordValid) {
         //generate a jwt
         const token = await loginUser.getJWT();
-        console.log(token);
-        // add the jwt to cookie
-
-        //send back the cookie  in response
+        console.log(token); // add the jwt to cookie //send back the cookie  in response
         res.cookie("token", token, {
           expires: new Date(Date.now() + 8 * 3600000), // cookie will be removed after 8 hours
         });
-        res.send("Login successful");
+        res.json({
+          message: "Login successful",
+          user: {
+            _id: loginUser._id,
+            firstName: loginUser.firstName,
+            lastName: loginUser.lastName,
+            emailId: loginUser.emailId,
+            age: loginUser.age,
+            gender: loginUser.gender,
+            photoUrl: loginUser.photoUrl,
+            about: loginUser.about,
+            skills: loginUser.skills,
+          },
+        });
       } else {
         throw new Error("Invalid Credentials!");
       }
     }
-
-    await loginUser.save();
   } catch (err) {
     console.log("Error==>", err);
     res.status(400).send({
       message: "ERR: " + err.message,
     });
   }
+});
+
+//logout API
+
+authRouter.post("/logout", async (req, res) => {
+  res.cookie("token", null, {
+    expires: new Date(Date.now()), // cookie will be removed immediately
+  });
+  res.send("Logout successful");
 });
 
 module.exports = authRouter;
