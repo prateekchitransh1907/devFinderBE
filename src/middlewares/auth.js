@@ -10,7 +10,7 @@ const userAuth = async (req, res, next) => {
 
     const { token } = cookie;
     if (!token) throw new Error("Invalid token"); //verify the token is valid or not
-    const decodedMessage = await jwt.verify(token, "Dev@finder9009");
+    const decodedMessage = await jwt.verify(token, process.env.JWT_SECRET_KEY);
     //find the user  exists in db or not
     console.log(decodedMessage);
     const { _id } = decodedMessage;
