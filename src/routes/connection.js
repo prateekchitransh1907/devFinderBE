@@ -5,6 +5,9 @@ const { UserModel } = require("../models/user");
 
 const connectionRouter = express.Router();
 
+//email
+const sendEmail = require("../utils/sendEmail");
+
 //send connection request
 connectionRouter.post(
   "/request/send/:status/:receiverId",
@@ -18,13 +21,11 @@ connectionRouter.post(
       const status = req.params.status;
       const allowedStatus = ["INTERESTED", "IGNORED"];
       if (!allowedStatus.includes(status.toUpperCase())) {
-        return res
-          .status(400)
-          .json({
-            statusCode: 400,
-            errorStatus: "INVALID_STATUS",
-            message: "Invalid status type:" + status,
-          });
+        return res.status(400).json({
+          statusCode: 400,
+          errorStatus: "INVALID_STATUS",
+          message: "Invalid status type:" + status,
+        });
       } //corner case - check if a request is already sent by the sender to receiver and its pending
       const existingRequest = await connectionRequestModel.findOne({
         $or: [
@@ -33,23 +34,19 @@ connectionRouter.post(
         ],
       });
       if (existingRequest) {
-        return res
-          .status(400)
-          .json({
-            statusCode: 400,
-            errorStatus: "REQUEST_ALREADY_SENT",
-            message: "Connection request is already sent to this user!",
-          });
+        return res.status(400).json({
+          statusCode: 400,
+          errorStatus: "REQUEST_ALREADY_SENT",
+          message: "Connection request is already sent to this user!",
+        });
       } //corner case - if receiver is not registered user
       const isReceiverValid = await UserModel.findById(receiverId);
       if (!isReceiverValid) {
-        return res
-          .status(404)
-          .json({
-            statusCode: 404,
-            errorStatus: "USER_NOT_FOUND",
-            message: "The user you are trying to connect with does not exist!",
-          });
+        return res.status(404).json({
+          statusCode: 404,
+          errorStatus: "USER_NOT_FOUND",
+          message: "The user you are trying to connect with does not exist!",
+        });
       }
       const connectionRequest = new connectionRequestModel({
         senderId,
@@ -57,6 +54,16 @@ connectionRouter.post(
         status: status.toUpperCase(),
       });
       const data = await connectionRequest.save();
+      const senderName = `${req.user.firstName} ${req.user.lastName}`;
+
+      const emailRes = await sendEmail.run({
+        toAddress: "prateekchitransh@gmail.com",
+        fromAddress: "updates@dev-finder.com",
+        senderName: `${req.user.firstName} ${req.user.lastName}`,
+        senderHeadline: req.user.about,
+        profileLink: `https://dev-finder.com/profile/${senderId}`,
+      });
+      console.log("Email response:", emailRes);
       res.json({
         message: "User action on the request: " + status.toUpperCase(),
         data: data,
@@ -77,13 +84,11 @@ connectionRouter.post(
       const { status, requestId } = req.params;
       const allowedStatus = ["ACCEPTED", "REJECTED"];
       if (!allowedStatus.includes(status.toUpperCase())) {
-        return res
-          .status(400)
-          .json({
-            statusCode: 400,
-            errorStatus: "INVALID_STATUS",
-            message: "Invalid status!",
-          });
+        return res.status(400).json({
+          statusCode: 400,
+          errorStatus: "INVALID_STATUS",
+          message: "Invalid status!",
+        });
       }
       const connectionRequest = await connectionRequestModel.findOne({
         _id: requestId,
@@ -91,13 +96,11 @@ connectionRouter.post(
         status: "INTERESTED",
       });
       if (!connectionRequest) {
-        return res
-          .status(404)
-          .json({
-            statusCode: 404,
-            errorStatus: "REQUEST_NOT_FOUND",
-            message: "Connection request not found!",
-          });
+        return res.status(404).json({
+          statusCode: 404,
+          errorStatus: "REQUEST_NOT_FOUND",
+          message: "Connection request not found!",
+        });
       }
       connectionRequest.status = status.toUpperCase();
       const data = await connectionRequest.save();
