@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+require("../src/cron/weeklyDigest");
 const { connectDB } = require("./config/database");
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");

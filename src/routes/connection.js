@@ -6,7 +6,8 @@ const { UserModel } = require("../models/user");
 const connectionRouter = express.Router();
 
 //email
-const sendEmail = require("../utils/sendEmail");
+const { sendEmail } = require("../services/emailService");
+const connectionRequestTemplate = require("../emailTemplates/requestSentTemplate");
 
 //send connection request
 connectionRouter.post(
@@ -55,15 +56,23 @@ connectionRouter.post(
       });
       const data = await connectionRequest.save();
       const senderName = `${req.user.firstName} ${req.user.lastName}`;
-
-      const emailRes = await sendEmail.run({
-        toAddress: "prateekchitransh@gmail.com",
-        fromAddress: "updates@dev-finder.com",
-        senderName: `${req.user.firstName} ${req.user.lastName}`,
-        senderHeadline: req.user.about,
+      const template = connectionRequestTemplate({
+        senderName,
+        senderHeadline: req.user.about || "Developer at DevFinder",
         profileLink: `https://dev-finder.com/profile/${senderId}`,
       });
-      console.log("Email response:", emailRes);
+      console.log(template);
+      try {
+        const emailRes = sendEmail({
+          toAddress: "prateekchitransh@gmail.com",
+          fromAddress: "updates@dev-finder.com",
+          ...template,
+        });
+
+        console.log("Email response:", emailRes);
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
+      }
       res.json({
         message: "User action on the request: " + status.toUpperCase(),
         data: data,
