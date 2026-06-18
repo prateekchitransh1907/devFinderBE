@@ -44,6 +44,13 @@ const userSchema = new mongoose.Schema(
         message: "{VALUE} is not a valid gender",
       }, // validate(value) { //   if (!["male", "female", "Not Specified"].includes(value)) { //     throw new Error("Gender is not valid"); //   } // },
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
+    },
     photoUrl: {
       type: String,
       default: DEFAULT_PHOTO_URL,

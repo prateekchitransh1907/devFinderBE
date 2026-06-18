@@ -8,6 +8,7 @@ const profileRouter = require("./routes/profile");
 const connectionRouter = require("./routes/connection");
 const cookieParser = require("cookie-parser");
 const userRouter = require("./routes/user");
+const paymentRouter = require("./routes/payment");
 
 const app = express();
 const PORT = process.env.PORT;
@@ -24,6 +25,7 @@ app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", connectionRouter);
 app.use("/", userRouter);
+app.use("/", paymentRouter);
 
 connectDB()
   .then(() => {
