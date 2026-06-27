@@ -5,7 +5,7 @@ const connectionRequestModel = require("../models/connectionRequest");
 const mongoose = require("mongoose");
 const { UserModel } = require("../models/user");
 //get all pendingrequests for logged in user
-const user_safe_data = "firstName lastName about skills";
+const user_safe_data = "firstName lastName about skills photoUrl age";
 userRouter.get("/user/requests/pending", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
